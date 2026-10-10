@@ -1,0 +1,26 @@
+name: Build SYNTRA_TV ISO
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build in Debian trixie
+        run: |
+          docker run --rm --privileged -v "$PWD":/work -w /work debian:trixie bash -c '
+            set -e
+            apt-get update
+            apt-get install -y live-build ca-certificates curl
+            chmod +x auto/* config/hooks/normal/* config/includes.chroot/usr/local/bin/*
+            lb config
+            lb build
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: syntra-tv-iso
+          path: |
+            *.iso
+            build.log
